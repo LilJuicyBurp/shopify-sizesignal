@@ -1,0 +1,210 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Shop {
+  id              String   @id @default(cuid())
+  shopDomain      String   @unique
+  accessToken     String
+  scope           String
+  installedAt     DateTime @default(now())
+  onboardingDone  Boolean  @default(false)
+  plan            Plan     @default(FREE)
+  billingId       String?
+  widgetEnabled   Boolean  @default(true)
+  widgetConfig    Json     @default("{}")
+  products        Product[]
+  sizeCharts      SizeChart[]
+  reviews         Review[]
+  returns         Return[]
+  analytics       AnalyticsEvent[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+enum Plan {
+  FREE
+  STARTER
+  GROWTH
+  ENTERPRISE
+}
+
+model Product {
+  id              String   @id @default(cuid())
+  shopId          String
+  shop            Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopifyId       String
+  title           String
+  handle          String
+  productType     String?
+  vendor          String?
+  tags            String[]
+  imageUrl        String?
+  status          String   @default("active")
+  variants        Variant[]
+  sizeChartId     String?
+  sizeChart       SizeChart? @relation(fields: [sizeChartId], references: [id])
+  reviews         Review[]
+  returns         Return[]
+  fitScore        Float?
+  fitConfusion    Float?
+  lastSyncedAt    DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([shopId, shopifyId])
+  @@index([shopId])
+  @@index([fitConfusion])
+}
+
+model Variant {
+  id              String   @id @default(cuid())
+  productId       String
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  shopifyId       String
+  title           String
+  size            String?
+  color           String?
+  sku             String?
+  price           Decimal?
+  inventoryQty    Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([productId, shopifyId])
+}
+
+model SizeChart {
+  id              String   @id @default(cuid())
+  shopId          String
+  shop            Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  name            String
+  productType     String?
+  measurements    Json
+  unit            String   @default("in")
+  isDefault       Boolean  @default(false)
+  products        Product[]
+  healthScore     Float?
+  issues          Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([shopId])
+}
+
+model Review {
+  id              String   @id @default(cuid())
+  shopId          String
+  shop            Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  productId       String
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  externalId      String?
+  rating          Int
+  body            String?
+  author          String?
+  fitMention      FitMention?
+  sizeMention     String?
+  sentiment       String?
+  parsedAt        DateTime?
+  createdAt       DateTime @default(now())
+
+  @@index([productId])
+  @@index([shopId])
+}
+
+enum FitMention {
+  RUNS_SMALL
+  TRUE_TO_SIZE
+  RUNS_LARGE
+  TIGHT_FIT
+  LOOSE_FIT
+  SIZE_UP
+  SIZE_DOWN
+}
+
+model Return {
+  id              String   @id @default(cuid())
+  shopId          String
+  shop            Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  productId       String
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderId         String?
+  reason          ReturnReason
+  sizeOrdered     String?
+  sizeExchanged   String?
+  notes           String?
+  createdAt       DateTime @default(now())
+
+  @@index([productId])
+  @@index([shopId])
+  @@index([reason])
+}
+
+enum ReturnReason {
+  TOO_SMALL
+  TOO_LARGE
+  FIT_ISSUE
+  STYLE_DIFFERENT
+  QUALITY_ISSUE
+  OTHER
+}
+
+model CustomerFitProfile {
+  id              String   @id @default(cuid())
+  shopId          String
+  customerId      String?
+  sessionId       String?
+  height          Float?
+  weight          Float?
+  preferredFit    String?
+  bodyType        String?
+  measurements    Json?
+  recommendations FitRecommendation[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([shopId])
+  @@index([customerId])
+}
+
+model FitRecommendation {
+  id              String   @id @default(cuid())
+  profileId       String
+  profile         CustomerFitProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  productId       String
+  recommendedSize String
+  confidence      Float
+  fitPrediction   FitPrediction
+  reasoning       Json
+  modelFitNotes   String?
+  createdAt       DateTime @default(now())
+
+  @@index([profileId])
+  @@index([productId])
+}
+
+enum FitPrediction {
+  TIGHT
+  SLIGHTLY_TIGHT
+  TRUE_TO_SIZE
+  SLIGHTLY_LOOSE
+  LOOSE
+}
+
+model AnalyticsEvent {
+  id              String   @id @default(cuid())
+  shopId          String
+  shop            Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  eventType       String
+  productId       String?
+  metadata        Json?
+  createdAt       DateTime @default(now())
+
+  @@index([shopId, eventType])
+  @@index([createdAt])
+}

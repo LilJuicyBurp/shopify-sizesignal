@@ -1,0 +1,38 @@
+name = "SizeSignal AI"
+client_id = "${SHOPIFY_API_KEY}"
+
+[access_scopes]
+scopes = "read_products,write_products,read_orders,read_customers"
+
+[auth]
+redirect_urls = [
+  "https://your-app.vercel.app/auth/callback",
+  "http://localhost:3000/auth/callback"
+]
+
+[webhooks]
+api_version = "2024-04"
+
+  [webhooks.subscriptions]
+
+    [[webhooks.subscriptions.topics]]
+    topics = ["app/uninstalled", "products/update", "products/delete", "orders/create"]
+    uri = "/api/webhooks"
+
+[app_proxy]
+subpath = "sizesignal"
+prefix = "apps"
+url = "https://your-app.vercel.app/api/widget"
+
+[pos]
+embedded = false
+
+[build]
+automatically_update_urls_on_dev = true
+
+[extensions]
+
+  [[extensions.theme]]
+  name = "SizeSignal Widget"
+  type = "theme_app_extension"
+  directory = "extensions/size-widget"

@@ -1,0 +1,82 @@
+{{ 'size-widget.css' | asset_url | stylesheet_tag }}
+
+<div
+  id="sizesignal-widget"
+  class="sizesignal-widget"
+  data-product-id="{{ product.id }}"
+  data-shop="{{ shop.permanent_domain }}"
+  data-app-url="https://{{ app.proxy_url | default: shop.permanent_domain }}"
+  data-heading-text="{{ block.settings.heading_text | escape }}"
+  data-button-text="{{ block.settings.button_text | escape }}"
+  data-primary-color="{{ block.settings.primary_color }}"
+  data-show-confidence="{{ block.settings.show_confidence }}"
+  data-show-fit-prediction="{{ block.settings.show_fit_prediction }}"
+  data-show-model-notes="{{ block.settings.show_model_notes }}"
+  data-widget-style="{{ block.settings.widget_style }}"
+>
+  <h3 class="sizesignal-heading">{{ block.settings.heading_text }}</h3>
+</div>
+
+{{ 'size-widget.js' | asset_url | script_tag }}
+
+{% schema %}
+{
+  "name": "SizeSignal - Size Recommender",
+  "target": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading_text",
+      "label": "Heading Text",
+      "default": "Find Your Perfect Size"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button Text",
+      "default": "Get My Size"
+    },
+    {
+      "type": "color",
+      "id": "primary_color",
+      "label": "Primary Color",
+      "default": "#000000"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_confidence",
+      "label": "Show Confidence Badge",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_fit_prediction",
+      "label": "Show Fit Prediction",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_model_notes",
+      "label": "Show Model Notes",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "widget_style",
+      "label": "Widget Display Style",
+      "options": [
+        { "value": "inline", "label": "Inline" },
+        { "value": "modal", "label": "Modal" },
+        { "value": "drawer", "label": "Drawer" }
+      ],
+      "default": "inline"
+    }
+  ],
+  "presets": [
+    {
+      "name": "SizeSignal - Size Recommender",
+      "category": "product-information"
+    }
+  ]
+}
+{% endschema %}

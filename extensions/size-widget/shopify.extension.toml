@@ -1,0 +1,13 @@
+api_version = "2024-04"
+
+[[extensions]]
+name = "SizeSignal Widget"
+handle = "size-recommender"
+type = "theme"
+
+  [extensions.capabilities]
+  block_progress = false
+
+  [[extensions.targeting]]
+  module = "./blocks/size-recommender.liquid"
+  target = "section"
